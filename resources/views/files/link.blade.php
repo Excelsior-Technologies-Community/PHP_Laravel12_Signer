@@ -1,39 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signed URL Generated</title>
+    <title>Signed URL</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans">
 
-    <!-- Header -->
-    <header class="bg-blue-600 text-white py-8 shadow-md">
-        <div class="container mx-auto text-center">
-            <h1 class="text-4xl font-bold tracking-wide">Secure File Download</h1>
-            <p class="mt-2 text-lg">Your signed URL is ready</p>
+<body class="bg-gray-100">
+
+    <div class="max-w-lg mx-auto mt-20 bg-white p-8 rounded-xl shadow-lg text-center">
+
+        <h2 class="text-3xl font-bold text-green-600 mb-4">
+            Link Generated 🎉
+        </h2>
+
+        <p class="text-gray-700 mb-2 font-semibold">
+            {{ $file->name }}
+        </p>
+
+        <p class="text-sm text-gray-500 mb-6">
+            This link is valid for 10 minutes only
+        </p>
+
+        <!-- Download Button -->
+        <a href="{{ $signedUrl }}"
+            class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+            Download File
+        </a>
+
+        <!-- Copy Link -->
+        <div class="mt-6">
+            <input type="text" value="{{ $signedUrl }}" readonly class="w-full border p-2 rounded text-sm">
         </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto mt-12 px-4 flex justify-center">
-        <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Signed URL Generated</h2>
-            
-            <!-- File Name -->
-            <p class="text-xl text-blue-600 font-semibold mb-6">{{ $file->name }}</p>
-            
-            <!-- Info -->
-            <p class="text-gray-500 mb-4">This link is valid for 10 minutes only.</p>
-
-            <!-- Download Button -->
-            <a href="{{ $signedUrl }}" 
-               class="inline-block px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition-colors duration-300">
-                Download File
+        <div class="mt-6">
+            <a href="/" class="text-gray-600 hover:underline">
+                ← Back to Files
             </a>
         </div>
-    </main>
+
+    </div>
 
 </body>
+
 </html>
