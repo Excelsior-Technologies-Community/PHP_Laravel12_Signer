@@ -443,4 +443,7 @@ PHP_Laravel12_Signer/
 
 Your PHP_Laravel12_Signer Project is now ready!
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> development

@@ -1,38 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laravel URL Signer - Files</title>
+    <title>Files</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans">
 
-    <!-- Header -->
-    <header class="bg-blue-600 text-white py-8 shadow-md">
-        <div class="container mx-auto text-center">
-            <h1 class="text-4xl font-bold tracking-wide">Secure File Downloads</h1>
-            <p class="mt-2 text-lg">Generate signed URLs for your files</p>
-        </div>
-    </header>
+<body class="bg-gray-100">
 
-    <!-- Main Content -->
-    <main class="container mx-auto mt-12 px-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach($files as $file)
-            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-between">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ $file->name }}</h2>
-                    <p class="text-gray-500 mb-4">File ID: {{ $file->id }}</p>
-                </div>
-                <a href="{{ url('/generate/'.$file->id) }}" 
-                   class="mt-auto inline-block text-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition-colors duration-300">
-                    Generate Signed URL
+    <div class="max-w-5xl mx-auto mt-10">
+
+        <!-- HEADER -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-800">📁 Files Manager</h2>
+
+            <div class="space-x-2">
+                <a href="/create" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    + Upload
+                </a>
+
+                <a href="/trash" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Trash
                 </a>
             </div>
-            @endforeach
         </div>
-    </main>
+
+        <!-- SUCCESS MESSAGE -->
+        @if(session('success'))
+            <div class="bg-green-500 text-white p-3 mb-4 rounded shadow">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- SEARCH BAR -->
+        <form method="GET" class="mb-6">
+            <div class="flex">
+                <input type="text" name="search" placeholder="🔍 Search file..."
+                    class="w-full border p-3 rounded-l focus:outline-none">
+
+                <button type="submit" class="bg-blue-500 text-white px-6 rounded-r hover:bg-blue-600">
+                    Search
+                </button>
+            </div>
+        </form>
+
+        <!-- FILE LIST -->
+        <div class="bg-white rounded shadow p-4">
+
+            @if($files->count() == 0)
+                <div class="text-center text-gray-500 py-10">
+                    📂 No files found
+                </div>
+            @endif
+
+            @foreach($files as $file)
+                <div class="flex justify-between items-center border-b py-3 hover:bg-gray-50 transition">
+
+                    <!-- FILE INFO -->
+                    <div>
+                        <p class="font-semibold text-gray-800">
+                            {{ $file->name }}
+                        </p>
+                        <p class="text-sm text-gray-400">
+                            ID: {{ $file->id }}
+                        </p>
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div class="space-x-2">
+
+                        <a href="/generate/{{ $file->id }}"
+                            class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">
+                            Generate Link
+                        </a>
+
+                        <a href="/delete/{{ $file->id }}" onclick="return confirm('Are you sure to delete this file?')"
+                            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">
+                            Delete
+                        </a>
+
+                    </div>
+
+                </div>
+            @endforeach
+
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="mt-6">
+            {{ $files->links() }}
+        </div>
+
+    </div>
 
 </body>
+
 </html>
