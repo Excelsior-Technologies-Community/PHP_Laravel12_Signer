@@ -9,5 +9,10 @@ class File extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'path'];
+    protected $fillable = ['name', 'path', 'parent_id', 'size'];
+
+    public function children()
+    {
+        return $this->hasMany(File::class, 'parent_id');
+    }
 }

@@ -12,8 +12,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('path');
+            $table->bigInteger('size')->default(0); 
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->foreign('parent_id')->references('id')->on('files')->onDelete('cascade');
             $table->timestamps();
-            $table->softDeletes(); // ✅ Soft Delete
+            $table->softDeletes();
         });
     }
 
