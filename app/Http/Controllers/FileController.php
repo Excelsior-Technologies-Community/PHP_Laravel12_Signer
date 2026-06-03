@@ -5,47 +5,54 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\File;
 use UrlSigner;
+use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
 {
-    // LIST + SEARCH + PAGINATION
     public function index(Request $request)
     {
-        $query = File::query();
+        $query = File::whereNull('parent_id');
 
         if ($request->search) {
             $query->where('name', 'LIKE', '%' . $request->search . '%');
         }
 
-        $files = $query->orderBy('created_at', 'asc')->paginate(3);
-        return view('files.index', compact('files'));
+        $files = $query->orderBy('created_at', 'asc')->paginate(10);
+        
+        $totalSize = File::sum('size');
+        $diskUsage = number_format($totalSize / 1024 / 1024, 2) . ' MB';
+
+        return view('files.index', compact('files', 'diskUsage'));
     }
 
-    // SHOW UPLOAD FORM
     public function create()
     {
         return view('files.create');
     }
 
-    // STORE FILE
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'file' => 'required|mimes:pdf'
+            'files.*' => 'required|file|mimes:pdf,jpg,png,zip,webp',
+            'parent_id' => 'nullable|exists:files,id'
         ]);
 
-        $path = $request->file('file')->store('files', 'public');
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('files', 'public');
+                
+                File::create([
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path,
+                    'size' => $file->getSize(),
+                    'parent_id' => $request->parent_id
+                ]);
+            }
+        }
 
-        File::create([
-            'name' => $request->name,
-            'path' => $path
-        ]);
-
-        return redirect('/')->with('success', 'File uploaded successfully');
+        return redirect('/')->with('success', 'Files uploaded successfully');
     }
 
-    // GENERATE SIGNED URL
     public function generateSignedUrl(File $file)
     {
         $signedUrl = UrlSigner::sign(
@@ -56,45 +63,40 @@ class FileController extends Controller
         return view('files.link', compact('signedUrl', 'file'));
     }
 
-    // DOWNLOAD FILE
     public function download(File $file, Request $request)
     {
         if (!UrlSigner::validate($request->fullUrl())) {
             abort(403, 'Invalid or expired URL');
         }
 
-        return response()->download(
-            storage_path("app/public/{$file->path}")
-        );
+        return response()->download(storage_path("app/public/{$file->path}"));
     }
 
-    // SOFT DELETE
     public function destroy($id)
     {
         File::findOrFail($id)->delete();
-
-        return redirect('/')->with('success', 'File Moved to Trash successfully');
+        return redirect('/')->with('success', 'File Moved to Trash');
     }
 
-    // TRASH
     public function trash()
     {
         $files = File::onlyTrashed()->get();
         return view('files.trash', compact('files'));
     }
 
-    // RESTORE
     public function restore($id)
     {
         File::withTrashed()->find($id)->restore();
-        return redirect('/')->with('success', 'File Restore successfully');
-
+        return redirect('/')->with('success', 'File Restored');
     }
 
-    // FORCE DELETE
     public function forceDelete($id)
     {
-        File::withTrashed()->find($id)->forceDelete();
-        return back();
+        $file = File::withTrashed()->find($id);
+        if ($file->path) {
+            Storage::disk('public')->delete($file->path);
+        }
+        $file->forceDelete();
+        return back()->with('success', 'File Deleted Permanently');
     }
 }
